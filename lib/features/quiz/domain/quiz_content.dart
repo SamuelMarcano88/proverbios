@@ -1,3 +1,5 @@
+import 'dart:math';
+
 enum WisdomProfile { wise, simple, foolish }
 
 class QuizAnswer {
@@ -113,6 +115,21 @@ const quizQuestions = <QuizQuestion>[
     QuizAnswer('Busco herir con mis palabras.', WisdomProfile.foolish),
   ]),
 ];
+
+List<QuizQuestion> createRandomizedQuiz(Random random) {
+  final questions =
+      quizQuestions
+          .map(
+            (question) => QuizQuestion(
+              question.prompt,
+              List<QuizAnswer>.of(question.answers)..shuffle(random),
+            ),
+          )
+          .toList()
+        ..shuffle(random);
+
+  return questions;
+}
 
 QuizResult scoreQuiz(List<WisdomProfile> answers) {
   if (answers.length != quizQuestions.length) {

@@ -1,5 +1,4 @@
-import 'dart:ui' show Size;
-
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:proverbios/app/app.dart';
 import 'package:proverbios/features/quiz/domain/quiz_content.dart';
@@ -85,13 +84,13 @@ void main() {
     await tester.pumpAndSettle();
 
     for (var index = 0; index < quizQuestions.length; index++) {
-      final answer = find.text(quizQuestions[index].answers.first.label);
+      final answer = find.byType(Card).first;
       await tester.ensureVisible(answer);
       await tester.tap(answer);
       await tester.pumpAndSettle();
     }
 
-    expect(find.text('Una tendencia hacia la sabiduría'), findsOneWidget);
+    expect(find.text('TU REFLEXIÓN'), findsOneWidget);
     expect(find.text('Iniciar sesión y guardar'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

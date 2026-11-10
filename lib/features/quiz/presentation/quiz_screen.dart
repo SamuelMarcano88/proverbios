@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -16,15 +18,22 @@ class QuizScreen extends StatefulWidget {
 }
 
 class _QuizScreenState extends State<QuizScreen> {
+  late List<QuizQuestion> _questions;
   final _answers = <WisdomProfile>[];
   QuizResult? _result;
   bool _isSaving = false;
   bool _isSaved = false;
   String? _saveError;
 
+  @override
+  void initState() {
+    super.initState();
+    _questions = createRandomizedQuiz(Random());
+  }
+
   Future<void> _answer(QuizAnswer answer) async {
     setState(() => _answers.add(answer.profile));
-    if (_answers.length == quizQuestions.length) {
+    if (_answers.length == _questions.length) {
       final result = scoreQuiz(_answers);
       setState(() => _result = result);
       if (widget.supabaseClient?.auth.currentUser != null) {
@@ -81,6 +90,7 @@ class _QuizScreenState extends State<QuizScreen> {
 
   void _restart() {
     setState(() {
+      _questions = createRandomizedQuiz(Random());
       _answers.clear();
       _result = null;
       _isSaved = false;
@@ -108,12 +118,12 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   Widget _buildQuestion(BuildContext context) {
-    final question = quizQuestions[_answers.length];
+    final question = _questions[_answers.length];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'PREGUNTA ${_answers.length + 1} DE ${quizQuestions.length}',
+          'PREGUNTA ${_answers.length + 1} DE ${_questions.length}',
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
             color: AppColors.gold,
             fontWeight: FontWeight.w700,
@@ -121,7 +131,7 @@ class _QuizScreenState extends State<QuizScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        LinearProgressIndicator(value: _answers.length / quizQuestions.length),
+        LinearProgressIndicator(value: _answers.length / _questions.length),
         const SizedBox(height: 32),
         Text(
           question.prompt,

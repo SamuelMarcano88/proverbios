@@ -5,11 +5,13 @@ Proverbios.
 
 ## Funciones
 
-- Test de reflexión con resultados orientativos para el sabio, el simple y el
-  insensato. No es un diagnóstico ni una etiqueta permanente.
+- Test de reflexión que mezcla preguntas y respuestas cada vez que se inicia,
+  con resultados orientativos para el sabio, el simple y el insensato. No es un
+  diagnóstico ni una etiqueta permanente.
 - Proverbio diario con una reflexión breve; usa textos de Reina-Valera 1909,
   de dominio público.
-- Guía de aprendizaje sobre los tres perfiles.
+- Guía de aprendizaje sobre los tres perfiles, con enseñanzas y prácticas que
+  cambian aleatoriamente al entrar.
 - Cuentas con correo y contraseña, historial del test y favoritos en Supabase.
   Las cuentas y el guardado en la nube requieren configurar el proyecto según
   los pasos de abajo.
