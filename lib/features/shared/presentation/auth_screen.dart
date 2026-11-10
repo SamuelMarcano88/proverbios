@@ -72,6 +72,35 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
+  Future<void> _continueWithGoogle() async {
+    setState(() {
+      _isSubmitting = true;
+      _error = null;
+      _message = null;
+    });
+
+    try {
+      final started = await widget.supabaseClient.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: Uri.base.origin,
+      );
+      if (!started && mounted) {
+        setState(() {
+          _error =
+              'No se pudo iniciar el acceso con Google. Inténtalo otra vez.';
+        });
+      }
+    } on AuthException catch (error) {
+      if (mounted) setState(() => _error = error.message);
+    } on Exception catch (error) {
+      if (mounted) {
+        setState(() => _error = 'No se pudo conectar con Google: $error');
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,16 +116,58 @@ class _AuthScreenState extends State<AuthScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    _isRegistering ? 'Crear cuenta' : 'Iniciar sesión',
+                    _isRegistering ? 'Crea tu cuenta' : 'Bienvenido',
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Tu cuenta permite guardar tus resultados y proverbios '
-                    'favoritos en todos tus dispositivos.',
+                    'Regístrate con Google o con tu correo para guardar tus '
+                    'resultados y proverbios favoritos. También puedes hacer '
+                    'el test sin registrarte.',
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
-                  const SizedBox(height: 26),
+                  const SizedBox(height: 22),
+                  OutlinedButton(
+                    onPressed: _isSubmitting ? null : _continueWithGoogle,
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'G',
+                            style: TextStyle(
+                              color: Color(0xFF4285F4),
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          Text('Continuar con Google'),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 18),
+                    child: Row(
+                      children: [
+                        Expanded(child: Divider()),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 12),
+                          child: Text('o con correo'),
+                        ),
+                        Expanded(child: Divider()),
+                      ],
+                    ),
+                  ),
+                  if (_isRegistering) ...[
+                    Text(
+                      'Crear cuenta con correo',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 14),
+                  ],
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
@@ -133,6 +204,23 @@ class _AuthScreenState extends State<AuthScreen> {
                       return null;
                     },
                   ),
+                  if (_isRegistering) ...[
+                    const SizedBox(height: 14),
+                    TextFormField(
+                      obscureText: true,
+                      autofillHints: const [AutofillHints.newPassword],
+                      decoration: const InputDecoration(
+                        labelText: 'Repite la contraseña',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value != _passwordController.text) {
+                          return 'Las contraseñas no coinciden.';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
                   if (_error != null) ...[
                     const SizedBox(height: 14),
                     _MessageBox(text: _error!, isError: true),
@@ -150,8 +238,8 @@ class _AuthScreenState extends State<AuthScreen> {
                         _isSubmitting
                             ? 'Un momento...'
                             : _isRegistering
-                            ? 'Crear cuenta'
-                            : 'Iniciar sesión',
+                            ? 'Registrarme con correo'
+                            : 'Iniciar sesión con correo',
                       ),
                     ),
                   ),
@@ -165,9 +253,16 @@ class _AuthScreenState extends State<AuthScreen> {
                           }),
                     child: Text(
                       _isRegistering
-                          ? 'Ya tengo una cuenta'
-                          : 'Crear una cuenta nueva',
+                          ? 'Ya tengo cuenta: iniciar sesión'
+                          : 'Crear cuenta con correo',
                     ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    '¿Solo quieres conocer el test? Puedes responderlo sin '
+                    'cuenta desde la pantalla principal.',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
               ),

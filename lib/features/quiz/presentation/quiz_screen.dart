@@ -221,14 +221,23 @@ class _QuizScreenState extends State<QuizScreen> {
             )
           else if (_saveError != null)
             _StatusMessage(text: _saveError!, isError: true)
+          else if (widget.supabaseClient == null)
+            const _StatusMessage(
+              text:
+                  'Completaste el test sin registrarte. El resultado es '
+                  'solo para esta sesión y no se guarda.',
+              isError: false,
+            )
           else if (widget.supabaseClient?.auth.currentUser == null)
             const _StatusMessage(
-              text: 'Inicia sesión para guardar este resultado en tu progreso.',
+              text:
+                  'Inicia sesión o crea una cuenta si quieres guardar este '
+                  'resultado. El test no requiere registro.',
               isError: false,
             ),
           if (_isSaving) const LinearProgressIndicator(),
           const SizedBox(height: 16),
-          if (!_isSaved)
+          if (!_isSaved && widget.supabaseClient != null)
             OutlinedButton.icon(
               onPressed: _isSaving ? null : () => _saveResult(result),
               icon: const Icon(Icons.bookmark_add_outlined),

@@ -81,12 +81,24 @@ proyecto ni la carpeta `web`: ninguna contiene el sitio compilado completo.
    `supabase/schema.sql`.
 2. En la configuración de autenticación de Supabase, habilita el proveedor
    **Email** y configura la confirmación de correo y las URLs de redirección
-   según el dominio de Netlify.
-3. En Netlify, abre **Project configuration → Environment variables** y agrega:
+   según el dominio de Netlify. El test de reflexión se puede completar sin
+   cuenta; registrarse solo es necesario para guardar el progreso.
+3. Para habilitar Google:
+   - Activa el proveedor **Google** en Supabase (**Authentication → Sign In /
+     Providers**) y configura allí el Client ID y Client Secret creados en
+     Google Cloud.
+   - En Google Cloud, registra como URI de redirección autorizada la URL de
+     callback que muestra Supabase para el proyecto
+     (`https://<project-ref>.supabase.co/auth/v1/callback`).
+   - En Supabase (**Authentication → URL Configuration → Redirect URLs**),
+     autoriza el dominio de producción de Netlify
+     (`https://proverbios01.netlify.app`) y el origen local
+     (`http://localhost:3000`) si desarrollas localmente.
+4. En Netlify, abre **Project configuration → Environment variables** y agrega:
    - `SUPABASE_URL`: URL del proyecto.
    - `SUPABASE_PUBLISHABLE_KEY`: clave pública/publishable del proyecto (nunca
      uses la `service_role` en el cliente).
-4. Vuelve a desplegar la rama `main`.
+5. Vuelve a desplegar la rama `main`.
 
 El build pasa esas variables a Flutter mediante `--dart-define`. Para desarrollo
 local, proporciona los mismos valores al ejecutar `flutter run` o

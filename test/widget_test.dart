@@ -13,6 +13,10 @@ void main() {
     await tester.pumpWidget(const ProverbiosApp());
 
     expect(find.text('¿QUÉ PERFIL ERES?'), findsOneWidget);
+    expect(
+      find.textContaining('Puedes hacer el test sin registrarte.'),
+      findsOneWidget,
+    );
     expect(find.text('¿Qué tan sabio puedo ser?'), findsOneWidget);
     expect(find.text('Proverbio del día'), findsOneWidget);
     expect(find.text('Aprende a ser sabio'), findsOneWidget);
@@ -31,6 +35,25 @@ void main() {
     expect(find.text('¿Qué tan sabio puedo ser?'), findsOneWidget);
     expect(find.text('Proverbio del día'), findsOneWidget);
     expect(find.text('Aprende a ser sabio'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('keeps account registration optional on the home screen', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const ProverbiosApp());
+
+    expect(find.text('¿Qué tan sabio puedo ser?'), findsOneWidget);
+    expect(find.text('Crear cuenta'), findsOneWidget);
+
+    await tester.tap(find.text('Crear cuenta'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Activa tu cuenta'), findsOneWidget);
+    expect(
+      find.textContaining('El test funciona sin registro.'),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 
@@ -91,7 +114,11 @@ void main() {
     }
 
     expect(find.text('TU REFLEXIÓN'), findsOneWidget);
-    expect(find.text('Iniciar sesión y guardar'), findsOneWidget);
+    expect(
+      find.textContaining('Completaste el test sin registrarte.'),
+      findsOneWidget,
+    );
+    expect(find.text('Guardar resultado'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

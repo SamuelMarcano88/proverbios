@@ -71,6 +71,8 @@ class HomeScreen extends StatelessWidget {
                         ],
                         SizedBox(height: isWide ? 74 : 52),
                         _Introduction(isWide: isWide),
+                        const SizedBox(height: 18),
+                        const _AnonymousTestNotice(),
                         const SizedBox(height: 34),
                         if (isWide)
                           Row(
@@ -177,7 +179,11 @@ class _Header extends StatelessWidget {
               ),
             ),
             if (supabaseClient == null)
-              Text('Cuenta', style: Theme.of(context).textTheme.bodyMedium)
+              TextButton.icon(
+                onPressed: () => _showSupabaseSetup(context),
+                icon: const Icon(Icons.person_add_alt_1_outlined),
+                label: const Text('Crear cuenta'),
+              )
             else
               PopupMenuButton<String>(
                 tooltip: 'Cuenta y progreso',
@@ -246,6 +252,26 @@ class _Header extends StatelessWidget {
       }
     }
   }
+
+  void _showSupabaseSetup(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Activa tu cuenta'),
+        content: const Text(
+          'El test funciona sin registro. Para crear una cuenta y guardar el '
+          'progreso, configura SUPABASE_URL y SUPABASE_PUBLISHABLE_KEY en '
+          'Netlify y vuelve a publicar la app.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Entendido'),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _ConfigurationNotice extends StatelessWidget {
@@ -263,6 +289,35 @@ class _ConfigurationNotice extends StatelessWidget {
       child: const Text(
         'La app ya funciona, pero para crear cuentas y guardar tu progreso '
         'falta conectar las variables públicas de Supabase en Netlify.',
+      ),
+    );
+  }
+}
+
+class _AnonymousTestNotice extends StatelessWidget {
+  const _AnonymousTestNotice();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.blueTint,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: const Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.lock_open_outlined, color: AppColors.blue),
+          SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Puedes hacer el test sin registrarte. Crear una cuenta es '
+              'opcional y sirve para guardar tu progreso.',
+            ),
+          ),
+        ],
       ),
     );
   }
