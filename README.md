@@ -3,13 +3,16 @@
 Aplicación web en Flutter para reflexionar sobre las enseñanzas del libro de
 Proverbios.
 
-## Estado actual
+## Funciones
 
-La primera entrega contiene la estructura inicial de Flutter y una propuesta
-responsive para la pantalla principal. Las tarjetas muestran las tres secciones
-previstas; su contenido funcional, autenticación y conexión con Supabase quedan
-para las siguientes etapas. No se usan datos de demostración para simular esas
-integraciones.
+- Test de reflexión con resultados orientativos para el sabio, el simple y el
+  insensato. No es un diagnóstico ni una etiqueta permanente.
+- Proverbio diario con una reflexión breve; usa textos de Reina-Valera 1909,
+  de dominio público.
+- Guía de aprendizaje sobre los tres perfiles.
+- Cuentas con correo y contraseña, historial del test y favoritos en Supabase.
+  Las cuentas y el guardado en la nube requieren configurar el proyecto según
+  los pasos de abajo.
 
 ## Estructura
 
@@ -19,16 +22,19 @@ lib/
     app.dart
     theme/
   features/
+    daily_proverb/
     home/
-      presentation/
+    learning/
+    progress/
+    quiz/
+    shared/
   main.dart
 test/
 web/
 ```
 
-La interfaz y el tema están separados de las futuras funciones por carpetas
-`features`. En etapas posteriores se incorporarán autenticación y datos reales
-de Supabase, el test, el proverbio diario y los temas de aprendizaje.
+El script [supabase/schema.sql](./supabase/schema.sql) crea las tablas de
+progreso y sus políticas de seguridad por usuario.
 
 ## Ejecutar localmente
 
@@ -66,3 +72,29 @@ flutter build web --release
 
 Luego publica la carpeta `build/web` en Netlify. No publiques la raíz del
 proyecto ni la carpeta `web`: ninguna contiene el sitio compilado completo.
+
+### Configurar Supabase
+
+1. En el SQL Editor del proyecto Supabase, ejecuta el contenido de
+   `supabase/schema.sql`.
+2. En la configuración de autenticación de Supabase, habilita el proveedor
+   **Email** y configura la confirmación de correo y las URLs de redirección
+   según el dominio de Netlify.
+3. En Netlify, abre **Project configuration → Environment variables** y agrega:
+   - `SUPABASE_URL`: URL del proyecto.
+   - `SUPABASE_PUBLISHABLE_KEY`: clave pública/publishable del proyecto (nunca
+     uses la `service_role` en el cliente).
+4. Vuelve a desplegar la rama `main`.
+
+El build pasa esas variables a Flutter mediante `--dart-define`. Para desarrollo
+local, proporciona los mismos valores al ejecutar `flutter run` o
+`flutter build web`, por ejemplo:
+
+```powershell
+flutter run -d chrome `
+  --dart-define="SUPABASE_URL=$env:SUPABASE_URL" `
+  --dart-define="SUPABASE_PUBLISHABLE_KEY=$env:SUPABASE_PUBLISHABLE_KEY"
+```
+
+Sin esas variables, las secciones de lectura funcionan, pero no se pueden crear
+cuentas ni guardar progreso o favoritos en la nube.

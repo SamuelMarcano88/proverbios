@@ -24,4 +24,6 @@ fi
 
 "${flutter_dir}/bin/flutter" config --no-analytics
 "${flutter_dir}/bin/flutter" pub get
-"${flutter_dir}/bin/flutter" build web --release
+"${flutter_dir}/bin/flutter" build web --release \
+  --dart-define="SUPABASE_URL=${SUPABASE_URL:-}" \
+  --dart-define="SUPABASE_PUBLISHABLE_KEY=${SUPABASE_PUBLISHABLE_KEY:-}"

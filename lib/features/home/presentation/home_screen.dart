@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../app/theme/app_theme.dart';
+import '../../daily_proverb/presentation/daily_proverb_screen.dart';
+import '../../learning/presentation/learning_screen.dart';
+import '../../progress/presentation/progress_screen.dart';
+import '../../quiz/presentation/quiz_screen.dart';
+import '../../shared/presentation/auth_screen.dart';
 import 'widgets/home_option_card.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({this.supabaseClient, super.key});
+
+  final SupabaseClient? supabaseClient;
 
   static const _options = [
     _HomeOption(
@@ -28,8 +36,7 @@ class HomeScreen extends StatelessWidget {
     _HomeOption(
       number: '03',
       title: 'Aprende a ser sabio',
-      description:
-          'Conoce cómo responden el sabio, el simple y el insensato.',
+      description: 'Conoce cómo responden el sabio, el simple y el insensato.',
       icon: Icons.auto_stories_rounded,
       accentColor: AppColors.terracotta,
       iconBackgroundColor: AppColors.terracottaTint,
@@ -57,16 +64,22 @@ class HomeScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _Header(),
+                        _Header(supabaseClient: supabaseClient),
+                        if (supabaseClient == null) ...[
+                          const SizedBox(height: 18),
+                          const _ConfigurationNotice(),
+                        ],
                         SizedBox(height: isWide ? 74 : 52),
                         _Introduction(isWide: isWide),
                         const SizedBox(height: 34),
                         if (isWide)
                           Row(
                             children: [
-                              for (var index = 0;
-                                  index < _options.length;
-                                  index++) ...[
+                              for (
+                                var index = 0;
+                                index < _options.length;
+                                index++
+                              ) ...[
                                 if (index > 0) const SizedBox(width: 20),
                                 Expanded(
                                   child: SizedBox(
@@ -111,56 +124,146 @@ class HomeScreen extends StatelessWidget {
       description: option.description,
       accentColor: option.accentColor,
       iconBackgroundColor: option.iconBackgroundColor,
-      onTap: () {
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            const SnackBar(
-              content: Text('Esta sección se desarrollará en la siguiente etapa.'),
-            ),
-          );
-      },
+      onTap: () => _openOption(context, option),
     );
+  }
+
+  void _openOption(BuildContext context, _HomeOption option) {
+    final Widget page = switch (option.number) {
+      '01' => QuizScreen(supabaseClient: supabaseClient),
+      '02' => DailyProverbScreen(supabaseClient: supabaseClient),
+      _ => const LearningScreen(),
+    };
+
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
   }
 }
 
 class _Header extends StatelessWidget {
+  const _Header({required this.supabaseClient});
+
+  final SupabaseClient? supabaseClient;
+
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 42,
-          height: 42,
-          decoration: BoxDecoration(
-            color: AppColors.goldTint,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: const Icon(
-            Icons.menu_book_rounded,
-            color: AppColors.gold,
-            size: 23,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            '¿QUÉ PERFIL ERES?',
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: AppColors.ink,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.25,
+    return StreamBuilder<AuthState>(
+      stream: supabaseClient?.auth.onAuthStateChange,
+      builder: (context, snapshot) {
+        final user = supabaseClient?.auth.currentUser;
+        return Row(
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: AppColors.goldTint,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(
+                Icons.menu_book_rounded,
+                color: AppColors.gold,
+                size: 23,
+              ),
             ),
-          ),
-        ),
-        const Icon(
-          Icons.account_circle_outlined,
-          color: AppColors.mutedInk,
-          size: 21,
-        ),
-        const SizedBox(width: 7),
-        Text('Invitado', style: Theme.of(context).textTheme.bodyMedium),
-      ],
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                '¿QUÉ PERFIL ERES?',
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: AppColors.ink,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.25,
+                ),
+              ),
+            ),
+            if (supabaseClient == null)
+              Text('Cuenta', style: Theme.of(context).textTheme.bodyMedium)
+            else
+              PopupMenuButton<String>(
+                tooltip: 'Cuenta y progreso',
+                onSelected: (value) {
+                  if (value == 'progress') {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) =>
+                            ProgressScreen(supabaseClient: supabaseClient!),
+                      ),
+                    );
+                  } else if (value == 'signOut') {
+                    _signOut(context);
+                  } else {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) =>
+                            AuthScreen(supabaseClient: supabaseClient!),
+                      ),
+                    );
+                  }
+                },
+                itemBuilder: (context) => [
+                  if (user != null)
+                    const PopupMenuItem(
+                      value: 'progress',
+                      child: Text('Mi progreso'),
+                    ),
+                  PopupMenuItem(
+                    value: user == null ? 'signIn' : 'signOut',
+                    child: Text(
+                      user == null ? 'Iniciar sesión' : 'Cerrar sesión',
+                    ),
+                  ),
+                ],
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.account_circle_outlined,
+                      color: AppColors.mutedInk,
+                      size: 21,
+                    ),
+                    const SizedBox(width: 7),
+                    Text(
+                      user?.email ?? 'Invitado',
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _signOut(BuildContext context) async {
+    try {
+      await supabaseClient!.auth.signOut();
+    } on AuthException catch (error) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('No se pudo cerrar sesión: ${error.message}')),
+        );
+      }
+    }
+  }
+}
+
+class _ConfigurationNotice extends StatelessWidget {
+  const _ConfigurationNotice();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.goldTint,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: const Text(
+        'La app ya funciona, pero para crear cuentas y guardar tu progreso '
+        'falta conectar las variables públicas de Supabase en Netlify.',
+      ),
     );
   }
 }
@@ -186,9 +289,9 @@ class _Introduction extends StatelessWidget {
         const SizedBox(height: 15),
         Text(
           'Cada decisión cuenta.',
-          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-            fontSize: isWide ? 48 : 38,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineLarge?.copyWith(fontSize: isWide ? 48 : 38),
         ),
         const SizedBox(height: 13),
         ConstrainedBox(
