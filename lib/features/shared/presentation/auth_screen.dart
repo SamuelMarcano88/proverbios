@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../app/theme/app_theme.dart';
+import '../../../app/presentation/language_selector.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({required this.supabaseClient, super.key});
@@ -104,7 +105,10 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Tu cuenta')),
+      appBar: AppBar(
+        title: const Text('Tu cuenta'),
+        actions: const [LanguageSelector()],
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),

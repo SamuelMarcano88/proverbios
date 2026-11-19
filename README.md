@@ -15,6 +15,10 @@ Proverbios.
 - Cuentas con correo y contraseña, historial del test y favoritos en Supabase.
   Las cuentas y el guardado en la nube requieren configurar el proyecto según
   los pasos de abajo.
+- Selector de idioma disponible en todas las secciones, con soporte para
+  Español y Portugués de Brasil.
+- Comunidad simple con publicaciones públicas y creación/eliminación de posts
+  para usuarios autenticados.
 
 ## Estructura
 

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_theme.dart';
+import '../../../app/presentation/language_selector.dart';
 
 class LearningScreen extends StatefulWidget {
   const LearningScreen({super.key});
@@ -129,7 +130,10 @@ class _LearningScreenState extends State<LearningScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Aprende a ser sabio')),
+      appBar: AppBar(
+        title: const Text('Aprende a ser sabio'),
+        actions: const [LanguageSelector()],
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),

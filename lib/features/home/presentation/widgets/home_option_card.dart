@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../app/localization.dart';
 import '../../../../app/theme/app_theme.dart';
 
 class HomeOptionCard extends StatelessWidget {
@@ -32,7 +33,7 @@ class HomeOptionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         child: Container(
           constraints: const BoxConstraints(minHeight: 282),
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(24),
             border: Border.all(color: AppColors.border),
@@ -62,21 +63,15 @@ class HomeOptionCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 27),
-              Text(
-                title,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
+              const SizedBox(height: 18),
+              Text(title, style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 10),
-              Text(
-                description,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
+              Text(description, style: Theme.of(context).textTheme.bodyMedium),
               const SizedBox(height: 22),
               Row(
                 children: [
                   Text(
-                    'EXPLORAR',
+                    context.tr('explore'),
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
                       color: accentColor,
                       fontWeight: FontWeight.w700,
@@ -84,7 +79,11 @@ class HomeOptionCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Icon(Icons.arrow_forward_rounded, color: accentColor, size: 18),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    color: accentColor,
+                    size: 18,
+                  ),
                 ],
               ),
             ],

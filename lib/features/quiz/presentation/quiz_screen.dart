@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../app/theme/app_theme.dart';
+import '../../../app/localization.dart';
+import '../../../app/presentation/language_selector.dart';
 import '../../progress/data/progress_repository.dart';
 import '../../shared/presentation/auth_screen.dart';
 import '../domain/quiz_content.dart';
@@ -102,7 +104,10 @@ class _QuizScreenState extends State<QuizScreen> {
   Widget build(BuildContext context) {
     final result = _result;
     return Scaffold(
-      appBar: AppBar(title: const Text('¿Qué tan sabio puedo ser?')),
+      appBar: AppBar(
+        title: Text(context.tr('quiz_title')),
+        actions: const [LanguageSelector()],
+      ),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 760),

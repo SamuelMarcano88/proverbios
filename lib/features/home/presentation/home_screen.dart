@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../app/localization.dart';
+import '../../../app/presentation/language_selector.dart';
 import '../../../app/theme/app_theme.dart';
+import '../../community/presentation/community_screen.dart';
 import '../../daily_proverb/presentation/daily_proverb_screen.dart';
 import '../../learning/presentation/learning_screen.dart';
 import '../../progress/presentation/progress_screen.dart';
@@ -41,6 +44,15 @@ class HomeScreen extends StatelessWidget {
       accentColor: AppColors.terracotta,
       iconBackgroundColor: AppColors.terracottaTint,
     ),
+    _HomeOption(
+      number: '04',
+      title: 'Comunidad',
+      description:
+          'Comparte aprendizajes, reflexiones y conversaciones con otros.',
+      icon: Icons.forum_outlined,
+      accentColor: AppColors.blue,
+      iconBackgroundColor: AppColors.blueTint,
+    ),
   ];
 
   @override
@@ -75,24 +87,16 @@ class HomeScreen extends StatelessWidget {
                         const _AnonymousTestNotice(),
                         const SizedBox(height: 34),
                         if (isWide)
-                          Row(
+                          Wrap(
+                            spacing: 20,
+                            runSpacing: 16,
                             children: [
-                              for (
-                                var index = 0;
-                                index < _options.length;
-                                index++
-                              ) ...[
-                                if (index > 0) const SizedBox(width: 20),
-                                Expanded(
-                                  child: SizedBox(
-                                    height: 340,
-                                    child: _buildOptionCard(
-                                      context,
-                                      _options[index],
-                                    ),
-                                  ),
+                              for (final option in _options)
+                                SizedBox(
+                                  width: (1200 - 60) / 4,
+                                  height: 360,
+                                  child: _buildOptionCard(context, option),
                                 ),
-                              ],
                             ],
                           )
                         else
@@ -119,11 +123,18 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildOptionCard(BuildContext context, _HomeOption option) {
+    final l10n = context.l10n;
+    final translated = switch (option.number) {
+      '01' => (l10n.text('quiz_title'), l10n.text('quiz_description')),
+      '02' => (l10n.text('daily_title'), l10n.text('daily_description')),
+      '03' => (l10n.text('learn_title'), l10n.text('learn_description')),
+      _ => (l10n.text('community_title'), l10n.text('community_description')),
+    };
     return HomeOptionCard(
       number: option.number,
       icon: option.icon,
-      title: option.title,
-      description: option.description,
+      title: translated.$1,
+      description: translated.$2,
       accentColor: option.accentColor,
       iconBackgroundColor: option.iconBackgroundColor,
       onTap: () => _openOption(context, option),
@@ -134,7 +145,8 @@ class HomeScreen extends StatelessWidget {
     final Widget page = switch (option.number) {
       '01' => QuizScreen(supabaseClient: supabaseClient),
       '02' => DailyProverbScreen(supabaseClient: supabaseClient),
-      _ => const LearningScreen(),
+      '03' => const LearningScreen(),
+      _ => CommunityScreen(supabaseClient: supabaseClient),
     };
 
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
@@ -148,6 +160,7 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return StreamBuilder<AuthState>(
       stream: supabaseClient?.auth.onAuthStateChange,
       builder: (context, snapshot) {
@@ -170,7 +183,7 @@ class _Header extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                '¿QUÉ PERFIL ERES?',
+                l10n.text('profile_title'),
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
                   color: AppColors.ink,
                   fontWeight: FontWeight.w800,
@@ -178,15 +191,30 @@ class _Header extends StatelessWidget {
                 ),
               ),
             ),
+            const SizedBox(width: 4),
+            const LanguageSelector(),
+            const SizedBox(width: 4),
             if (supabaseClient == null)
-              TextButton.icon(
-                onPressed: () => _showSupabaseSetup(context),
-                icon: const Icon(Icons.person_add_alt_1_outlined),
-                label: const Text('Crear cuenta'),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final availableWidth = MediaQuery.sizeOf(context).width;
+                  if (availableWidth < 600) {
+                    return IconButton(
+                      tooltip: l10n.text('create_account'),
+                      onPressed: () => _showSupabaseSetup(context),
+                      icon: const Icon(Icons.person_add_alt_1_outlined),
+                    );
+                  }
+                  return TextButton.icon(
+                    onPressed: () => _showSupabaseSetup(context),
+                    icon: const Icon(Icons.person_add_alt_1_outlined),
+                    label: Text(l10n.text('create_account')),
+                  );
+                },
               )
             else
               PopupMenuButton<String>(
-                tooltip: 'Cuenta y progreso',
+                tooltip: l10n.text('account_progress'),
                 onSelected: (value) {
                   if (value == 'progress') {
                     Navigator.of(context).push(
@@ -208,14 +236,16 @@ class _Header extends StatelessWidget {
                 },
                 itemBuilder: (context) => [
                   if (user != null)
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'progress',
-                      child: Text('Mi progreso'),
+                      child: Text(l10n.text('progress')),
                     ),
                   PopupMenuItem(
                     value: user == null ? 'signIn' : 'signOut',
                     child: Text(
-                      user == null ? 'Iniciar sesión' : 'Cerrar sesión',
+                      user == null
+                          ? l10n.text('sign_in')
+                          : l10n.text('sign_out'),
                     ),
                   ),
                 ],
@@ -228,7 +258,7 @@ class _Header extends StatelessWidget {
                     ),
                     const SizedBox(width: 7),
                     Text(
-                      user?.email ?? 'Invitado',
+                      user?.email ?? l10n.text('guest'),
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
@@ -279,6 +309,7 @@ class _ConfigurationNotice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -286,10 +317,7 @@ class _ConfigurationNotice extends StatelessWidget {
         color: AppColors.goldTint,
         borderRadius: BorderRadius.circular(14),
       ),
-      child: const Text(
-        'La app ya funciona, pero para crear cuentas y guardar tu progreso '
-        'falta conectar las variables públicas de Supabase en Netlify.',
-      ),
+      child: Text(l10n.text('configuration_notice')),
     );
   }
 }
@@ -299,6 +327,7 @@ class _AnonymousTestNotice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -306,17 +335,12 @@ class _AnonymousTestNotice extends StatelessWidget {
         color: AppColors.blueTint,
         borderRadius: BorderRadius.circular(14),
       ),
-      child: const Row(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.lock_open_outlined, color: AppColors.blue),
-          SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              'Puedes hacer el test sin registrarte. Crear una cuenta es '
-              'opcional y sirve para guardar tu progreso.',
-            ),
-          ),
+          const Icon(Icons.lock_open_outlined, color: AppColors.blue),
+          const SizedBox(width: 10),
+          Expanded(child: Text(l10n.text('anonymous_notice'))),
         ],
       ),
     );
@@ -330,11 +354,12 @@ class _Introduction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final textColumn = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'UN CAMINO DE REFLEXIÓN',
+          l10n.text('reflection_path'),
           style: Theme.of(context).textTheme.labelMedium?.copyWith(
             color: AppColors.gold,
             fontWeight: FontWeight.w700,
@@ -343,7 +368,7 @@ class _Introduction extends StatelessWidget {
         ),
         const SizedBox(height: 15),
         Text(
-          'Cada decisión cuenta.',
+          l10n.text('each_decision'),
           style: Theme.of(
             context,
           ).textTheme.headlineLarge?.copyWith(fontSize: isWide ? 48 : 38),
@@ -352,9 +377,7 @@ class _Introduction extends StatelessWidget {
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 560),
           child: Text(
-            'Tres maneras de vivir. Una invitación a la sabiduría. '
-            'Explora las enseñanzas de Proverbios y encuentra nuevas '
-            'formas de crecer cada día.',
+            l10n.text('intro'),
             style: Theme.of(context).textTheme.bodyLarge,
           ),
         ),
@@ -391,9 +414,10 @@ class _Footer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Center(
       child: Text(
-        'Una pausa para pensar. Un paso para crecer.',
+        l10n.text('footer'),
         textAlign: TextAlign.center,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
           color: AppColors.mutedInk.withValues(alpha: 0.8),

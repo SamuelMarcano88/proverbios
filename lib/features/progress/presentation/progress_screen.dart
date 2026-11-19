@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../app/theme/app_theme.dart';
+import '../../../app/presentation/language_selector.dart';
 import '../../progress/data/progress_repository.dart';
 import '../../quiz/domain/quiz_content.dart';
 
@@ -22,7 +23,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Mi progreso')),
+      appBar: AppBar(
+        title: const Text('Mi progreso'),
+        actions: const [LanguageSelector()],
+      ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _history,
         builder: (context, snapshot) {
