@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../../../app/localization.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../app/presentation/language_selector.dart';
 
@@ -131,7 +132,7 @@ class _LearningScreenState extends State<LearningScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Aprende a ser sabio'),
+        title: Text(context.tr('learn_title')),
         actions: const [LanguageSelector()],
       ),
       body: Center(
@@ -143,13 +144,12 @@ class _LearningScreenState extends State<LearningScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Tres maneras de responder a la vida',
+                  context.tr('learning_title'),
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'Estos perfiles describen actitudes que podemos mostrar en '
-                  'distintos momentos. No son etiquetas fijas ni diagnósticos.',
+                  context.tr('learning_intro'),
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 const SizedBox(height: 24),
@@ -159,7 +159,7 @@ class _LearningScreenState extends State<LearningScreen> {
                 ],
                 const SizedBox(height: 8),
                 Text(
-                  'Referencias sugeridas: Proverbios 1:4–7 y 9:8–10.',
+                  context.tr('suggested_references'),
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
@@ -195,12 +195,12 @@ class _ProfileCard extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    profile.title,
+                    context.l10n.content(profile.title),
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
                 Text(
-                  profile.lesson!.reference,
+                  context.l10n.content(profile.lesson!.reference),
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: profile.color,
                     fontWeight: FontWeight.w600,
@@ -210,17 +210,17 @@ class _ProfileCard extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             Text(
-              profile.lesson!.summary,
+              context.l10n.content(profile.lesson!.summary),
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: AppColors.ink,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 8),
-            Text(profile.lesson!.body),
+            Text(context.l10n.content(profile.lesson!.body)),
             const SizedBox(height: 10),
             Text(
-              profile.lesson!.practice,
+              context.l10n.content(profile.lesson!.practice),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: profile.color,
                 fontWeight: FontWeight.w600,

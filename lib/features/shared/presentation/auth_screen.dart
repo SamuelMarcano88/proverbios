@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../app/localization.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../app/presentation/language_selector.dart';
 
 class AuthScreen extends StatefulWidget {
-  const AuthScreen({required this.supabaseClient, super.key});
+  const AuthScreen({
+    required this.supabaseClient,
+    this.startInRegistration = false,
+    super.key,
+  });
 
   final SupabaseClient supabaseClient;
+  final bool startInRegistration;
 
   @override
   State<AuthScreen> createState() => _AuthScreenState();
@@ -21,6 +27,12 @@ class _AuthScreenState extends State<AuthScreen> {
   bool _isSubmitting = false;
   String? _message;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _isRegistering = widget.startInRegistration;
+  }
 
   @override
   void dispose() {
@@ -47,9 +59,7 @@ class _AuthScreenState extends State<AuthScreen> {
         if (!mounted) return;
         if (response.session == null) {
           setState(() {
-            _message =
-                'Cuenta creada. Revisa tu correo para confirmar la dirección '
-                'y luego inicia sesión.';
+            _message = context.tr('register_confirm');
             _isRegistering = false;
           });
         } else {
@@ -87,15 +97,22 @@ class _AuthScreenState extends State<AuthScreen> {
       );
       if (!started && mounted) {
         setState(() {
-          _error =
-              'No se pudo iniciar el acceso con Google. Inténtalo otra vez.';
+          _error = context.tr('google_start_failed');
         });
       }
     } on AuthException catch (error) {
-      if (mounted) setState(() => _error = error.message);
+      if (mounted) {
+        setState(
+          () => _error =
+              '${context.tr('google_auth_failed')}: ${error.message}\n${context.tr('google_setup_hint')}',
+        );
+      }
     } on Exception catch (error) {
       if (mounted) {
-        setState(() => _error = 'No se pudo conectar con Google: $error');
+        setState(
+          () => _error =
+              '${context.tr('google_auth_failed')}: $error\n${context.tr('google_setup_hint')}',
+        );
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
@@ -106,7 +123,7 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tu cuenta'),
+        title: Text(context.tr('account_title')),
         actions: const [LanguageSelector()],
       ),
       body: Center(
@@ -120,25 +137,25 @@ class _AuthScreenState extends State<AuthScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    _isRegistering ? 'Crea tu cuenta' : 'Bienvenido',
+                    _isRegistering
+                        ? context.tr('register_heading')
+                        : context.tr('welcome'),
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Regístrate con Google o con tu correo para guardar tus '
-                    'resultados y proverbios favoritos. También puedes hacer '
-                    'el test sin registrarte.',
+                    context.tr('auth_intro'),
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
                   const SizedBox(height: 22),
                   OutlinedButton(
                     onPressed: _isSubmitting ? null : _continueWithGoogle,
-                    child: const Padding(
+                    child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 12),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
+                          const Text(
                             'G',
                             style: TextStyle(
                               color: Color(0xFF4285F4),
@@ -146,28 +163,28 @@ class _AuthScreenState extends State<AuthScreen> {
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          SizedBox(width: 10),
-                          Text('Continuar con Google'),
+                          const SizedBox(width: 10),
+                          Text(context.tr('continue_google')),
                         ],
                       ),
                     ),
                   ),
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.symmetric(vertical: 18),
                     child: Row(
                       children: [
-                        Expanded(child: Divider()),
+                        const Expanded(child: Divider()),
                         Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 12),
-                          child: Text('o con correo'),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Text(context.tr('or_email')),
                         ),
-                        Expanded(child: Divider()),
+                        const Expanded(child: Divider()),
                       ],
                     ),
                   ),
                   if (_isRegistering) ...[
                     Text(
-                      'Crear cuenta con correo',
+                      context.tr('register_email'),
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 14),
@@ -176,14 +193,14 @@ class _AuthScreenState extends State<AuthScreen> {
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     autofillHints: const [AutofillHints.email],
-                    decoration: const InputDecoration(
-                      labelText: 'Correo electrónico',
+                    decoration: InputDecoration(
+                      labelText: context.tr('email'),
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) {
                       final email = value?.trim() ?? '';
                       if (!email.contains('@') || !email.contains('.')) {
-                        return 'Escribe un correo válido.';
+                        return context.tr('invalid_email');
                       }
                       return null;
                     },
@@ -197,13 +214,13 @@ class _AuthScreenState extends State<AuthScreen> {
                           ? AutofillHints.newPassword
                           : AutofillHints.password,
                     ],
-                    decoration: const InputDecoration(
-                      labelText: 'Contraseña',
+                    decoration: InputDecoration(
+                      labelText: context.tr('password'),
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) {
                       if ((value ?? '').length < 8) {
-                        return 'Usa al menos 8 caracteres.';
+                        return context.tr('password_length');
                       }
                       return null;
                     },
@@ -213,13 +230,13 @@ class _AuthScreenState extends State<AuthScreen> {
                     TextFormField(
                       obscureText: true,
                       autofillHints: const [AutofillHints.newPassword],
-                      decoration: const InputDecoration(
-                        labelText: 'Repite la contraseña',
+                      decoration: InputDecoration(
+                        labelText: context.tr('repeat_password'),
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) {
                         if (value != _passwordController.text) {
-                          return 'Las contraseñas no coinciden.';
+                          return context.tr('password_mismatch');
                         }
                         return null;
                       },
@@ -240,10 +257,10 @@ class _AuthScreenState extends State<AuthScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       child: Text(
                         _isSubmitting
-                            ? 'Un momento...'
+                            ? context.tr('working')
                             : _isRegistering
-                            ? 'Registrarme con correo'
-                            : 'Iniciar sesión con correo',
+                            ? context.tr('register_button')
+                            : context.tr('login_button'),
                       ),
                     ),
                   ),
@@ -257,14 +274,13 @@ class _AuthScreenState extends State<AuthScreen> {
                           }),
                     child: Text(
                       _isRegistering
-                          ? 'Ya tengo cuenta: iniciar sesión'
-                          : 'Crear cuenta con correo',
+                          ? context.tr('already_account')
+                          : context.tr('need_account'),
                     ),
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    '¿Solo quieres conocer el test? Puedes responderlo sin '
-                    'cuenta desde la pantalla principal.',
+                    context.tr('anonymous_test'),
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),

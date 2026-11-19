@@ -84,9 +84,11 @@ proyecto ni la carpeta `web`: ninguna contiene el sitio compilado completo.
 1. En el SQL Editor del proyecto Supabase, ejecuta el contenido de
    `supabase/schema.sql`.
 2. En la configuración de autenticación de Supabase, habilita el proveedor
-   **Email** y configura la confirmación de correo y las URLs de redirección
+   **Email** para que cada persona pueda crear una cuenta con correo y
+   contraseña. Configura la confirmación de correo y las URLs de redirección
    según el dominio de Netlify. El test de reflexión se puede completar sin
-   cuenta; registrarse solo es necesario para guardar el progreso.
+   cuenta; iniciar sesión es necesario para guardar el progreso o publicar en
+   Comunidad.
 3. Para habilitar Google:
    - Activa el proveedor **Google** en Supabase (**Authentication → Sign In /
      Providers**) y configura allí el Client ID y Client Secret creados en
@@ -95,8 +97,8 @@ proyecto ni la carpeta `web`: ninguna contiene el sitio compilado completo.
      callback que muestra Supabase para el proyecto
      (`https://<project-ref>.supabase.co/auth/v1/callback`).
    - En Supabase (**Authentication → URL Configuration → Redirect URLs**),
-     autoriza el dominio de producción de Netlify
-     (`https://proverbios01.netlify.app`) y el origen local
+     agrega la URL de producción (`https://proverbios01.netlify.app`), que es
+     la dirección de retorno usada por la app, y el origen local
      (`http://localhost:3000`) si desarrollas localmente.
 4. En Netlify, abre **Project configuration → Environment variables** y agrega:
    - `SUPABASE_URL`: URL del proyecto.

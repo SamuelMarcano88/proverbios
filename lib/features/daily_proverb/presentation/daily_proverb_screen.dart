@@ -39,16 +39,26 @@ class _DailyProverbScreenState extends State<DailyProverbScreen> {
       final saved = await ProgressRepository(client).isProverbSaved(_proverb);
       if (mounted) setState(() => _isSaved = saved);
     } on AuthException catch (error) {
-      if (mounted) setState(() => _error = error.message);
+      if (mounted) {
+        setState(
+          () => _error = '${context.tr('operation_failed')}: ${error.message}',
+        );
+      }
     } on PostgrestException catch (error) {
       if (mounted) {
         setState(
-          () => _error = 'No se pudo cargar el favorito: ${error.message}',
+          () => _error = context
+              .tr('favorite_load_error')
+              .replaceAll('{error}', error.message),
         );
       }
     } on Exception catch (error) {
       if (mounted) {
-        setState(() => _error = 'No se pudo cargar el favorito: $error');
+        setState(
+          () => _error = context
+              .tr('favorite_load_error')
+              .replaceAll('{error}', '$error'),
+        );
       }
     }
   }
@@ -57,9 +67,7 @@ class _DailyProverbScreenState extends State<DailyProverbScreen> {
     final client = widget.supabaseClient;
     if (client == null) {
       setState(() {
-        _error =
-            'Para guardar favoritos, configura Supabase en las variables '
-            'de entorno de Netlify.';
+        _error = context.tr('favorite_save_config');
       });
       return;
     }
@@ -84,13 +92,27 @@ class _DailyProverbScreenState extends State<DailyProverbScreen> {
       ).toggleSavedProverb(_proverb);
       if (mounted) setState(() => _isSaved = saved);
     } on AuthException catch (error) {
-      if (mounted) setState(() => _error = error.message);
+      if (mounted) {
+        setState(
+          () => _error = '${context.tr('operation_failed')}: ${error.message}',
+        );
+      }
     } on PostgrestException catch (error) {
       if (mounted) {
-        setState(() => _error = 'No se pudo guardar: ${error.message}');
+        setState(
+          () => _error = context
+              .tr('favorite_save_error')
+              .replaceAll('{error}', error.message),
+        );
       }
     } on Exception catch (error) {
-      if (mounted) setState(() => _error = 'No se pudo guardar: $error');
+      if (mounted) {
+        setState(
+          () => _error = context
+              .tr('favorite_save_error')
+              .replaceAll('{error}', '$error'),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -118,7 +140,7 @@ class _DailyProverbScreenState extends State<DailyProverbScreen> {
                 ),
                 const SizedBox(height: 22),
                 Text(
-                  _proverb.reference.toUpperCase(),
+                  context.l10n.content(_proverb.reference).toUpperCase(),
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     color: AppColors.gold,
@@ -128,15 +150,12 @@ class _DailyProverbScreenState extends State<DailyProverbScreen> {
                 ),
                 const SizedBox(height: 18),
                 Text(
-                  '“${_proverb.text}”',
+                  '“${context.l10n.content(_proverb.text)}”',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'Reina-Valera 1909 · Texto de dominio público',
-                  textAlign: TextAlign.center,
-                ),
+                Text(context.tr('verses_source'), textAlign: TextAlign.center),
                 const SizedBox(height: 30),
                 Container(
                   padding: const EdgeInsets.all(20),
@@ -148,7 +167,7 @@ class _DailyProverbScreenState extends State<DailyProverbScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'PARA REFLEXIONAR',
+                        context.tr('reflect'),
                         style: Theme.of(context).textTheme.labelLarge?.copyWith(
                           color: AppColors.blue,
                           fontWeight: FontWeight.w700,
@@ -157,7 +176,7 @@ class _DailyProverbScreenState extends State<DailyProverbScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        _proverb.reflection,
+                        context.l10n.content(_proverb.reflection),
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
                     ],
@@ -178,16 +197,15 @@ class _DailyProverbScreenState extends State<DailyProverbScreen> {
                   icon: Icon(_isSaved ? Icons.bookmark : Icons.bookmark_border),
                   label: Text(
                     _isSaving
-                        ? 'Guardando...'
+                        ? context.tr('saving')
                         : _isSaved
-                        ? 'Guardado en favoritos'
-                        : 'Guardar en favoritos',
+                        ? context.tr('saved_favorite')
+                        : context.tr('save_favorite'),
                   ),
                 ),
                 const SizedBox(height: 30),
                 Text(
-                  'Cada día encontrarás una lectura distinta. La selección '
-                  'cambia automáticamente con la fecha.',
+                  context.tr('daily_note'),
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),

@@ -90,3 +90,7 @@ create policy "Users can delete their own community posts"
   on public.community_posts for delete
   to authenticated
   using ((select auth.uid()) = user_id);
+
+grant usage on schema public to anon, authenticated;
+grant select on table public.community_posts to anon, authenticated;
+grant insert, delete on table public.community_posts to authenticated;

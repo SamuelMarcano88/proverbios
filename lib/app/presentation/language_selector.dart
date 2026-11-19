@@ -12,25 +12,10 @@ class LanguageSelector extends StatelessWidget {
       tooltip: l10n.text('language'),
       onSelected: l10n.onLanguageChanged,
       itemBuilder: (context) => [
-        PopupMenuItem(
-          value: AppLanguage.es,
-          child: Row(
-            children: [
-              const Text('ES'),
-              const SizedBox(width: 8),
-              Text(l10n.text('spanish')),
-            ],
-          ),
-        ),
+        PopupMenuItem(value: AppLanguage.es, child: Text(l10n.text('spanish'))),
         PopupMenuItem(
           value: AppLanguage.ptBr,
-          child: Row(
-            children: [
-              const Text('PT-BR'),
-              const SizedBox(width: 8),
-              Text(l10n.text('portuguese_br')),
-            ],
-          ),
+          child: Text(l10n.text('portuguese_br')),
         ),
       ],
       child: Padding(

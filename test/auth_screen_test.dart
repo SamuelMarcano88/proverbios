@@ -21,7 +21,7 @@ void main() {
       findsOneWidget,
     );
 
-    final createAccount = find.text('Crear cuenta con correo');
+    final createAccount = find.text('¿No tienes cuenta? Crear cuenta');
     await tester.ensureVisible(createAccount);
     await tester.tap(createAccount);
     await tester.pumpAndSettle();
@@ -31,5 +31,22 @@ void main() {
     expect(find.text('Contraseña'), findsOneWidget);
     expect(find.text('Repite la contraseña'), findsOneWidget);
     expect(find.text('Registrarme con correo'), findsOneWidget);
+  });
+
+  testWidgets('can open directly in account creation mode', (tester) async {
+    final client = SupabaseClient(
+      'https://example.supabase.co',
+      'test-publishable-key',
+      authOptions: const AuthClientOptions(autoRefreshToken: false),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AuthScreen(supabaseClient: client, startInRegistration: true),
+      ),
+    );
+
+    expect(find.text('Crea tu cuenta'), findsOneWidget);
+    expect(find.text('Registrarme con correo'), findsOneWidget);
+    expect(find.text('Repite la contraseña'), findsOneWidget);
   });
 }

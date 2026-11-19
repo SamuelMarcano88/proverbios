@@ -38,17 +38,25 @@ class _CommunityScreenState extends State<CommunityScreen> {
   Future<void> _publish() async {
     final content = _contentController.text.trim();
     final client = widget.supabaseClient;
-    if (content.isEmpty || client == null) return;
+    if (content.isEmpty) return;
+    if (client == null) {
+      setState(() => _error = context.tr('configuration_notice'));
+      return;
+    }
 
     if (client.auth.currentUser == null) {
       await Navigator.of(context).push<bool>(
         MaterialPageRoute<bool>(
-          builder: (_) => AuthScreen(supabaseClient: client),
+          builder: (_) =>
+              AuthScreen(supabaseClient: client, startInRegistration: true),
         ),
       );
       if (!mounted) return;
     }
-    if (client.auth.currentUser == null) return;
+    if (client.auth.currentUser == null) {
+      setState(() => _error = context.tr('community_login_required'));
+      return;
+    }
 
     setState(() {
       _isPublishing = true;
@@ -59,7 +67,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
       _contentController.clear();
       await _refresh();
     } on Exception catch (error) {
-      if (mounted) setState(() => _error = error.toString());
+      if (mounted) setState(() => _error = _formatCommunityError(error));
     } finally {
       if (mounted) setState(() => _isPublishing = false);
     }
@@ -68,8 +76,24 @@ class _CommunityScreenState extends State<CommunityScreen> {
   Future<void> _delete(CommunityPost post) async {
     final client = widget.supabaseClient;
     if (client == null) return;
-    await CommunityRepository(client).deletePost(post.id);
-    await _refresh();
+    try {
+      await CommunityRepository(client).deletePost(post.id);
+      await _refresh();
+    } on Exception catch (error) {
+      if (mounted) setState(() => _error = _formatCommunityError(error));
+    }
+  }
+
+  String _formatCommunityError(Object error) {
+    if (error is PostgrestException &&
+        (error.code == '42P01' ||
+            error.code == '42501' ||
+            error.code == 'PGRST205' ||
+            error.message.contains('community_posts') ||
+            error.message.contains('schema cache'))) {
+      return '${context.tr('community_setup_error')} (${error.message})';
+    }
+    return '${context.tr('failed_post')} ($error)';
   }
 
   @override
@@ -98,6 +122,21 @@ class _CommunityScreenState extends State<CommunityScreen> {
               padding: const EdgeInsets.all(20),
               children: [
                 if (client != null) ...[
+                  if (client.auth.currentUser == null) ...[
+                    OutlinedButton.icon(
+                      onPressed: () => Navigator.of(context).push<void>(
+                        MaterialPageRoute<void>(
+                          builder: (_) => AuthScreen(
+                            supabaseClient: client,
+                            startInRegistration: true,
+                          ),
+                        ),
+                      ),
+                      icon: const Icon(Icons.person_add_alt_1_outlined),
+                      label: Text(l10n.text('sign_in_or_register')),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                   Text(
                     l10n.text('new_post'),
                     style: Theme.of(context).textTheme.titleLarge,
@@ -129,7 +168,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
                       color: AppColors.goldTint,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Text(l10n.text('login_to_post')),
+                    child: Text(l10n.text('configuration_notice')),
                   ),
                 if (_error != null) ...[
                   const SizedBox(height: 10),
@@ -145,13 +184,16 @@ class _CommunityScreenState extends State<CommunityScreen> {
                 ),
                 const SizedBox(height: 10),
                 if (client == null)
-                  Text(l10n.text('login_to_post'))
+                  Text(l10n.text('configuration_notice'))
                 else
                   FutureBuilder<List<CommunityPost>>(
                     future: _posts,
                     builder: (context, snapshot) {
                       if (snapshot.hasError) {
-                        return Text(snapshot.error.toString());
+                        return Text(
+                          _formatCommunityError(snapshot.error!),
+                          style: const TextStyle(color: AppColors.terracotta),
+                        );
                       }
                       if (!snapshot.hasData) {
                         return const Padding(
@@ -191,7 +233,9 @@ class _CommunityScreenState extends State<CommunityScreen> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                post.authorName,
+                                                context.l10n.content(
+                                                  post.authorName,
+                                                ),
                                                 style: Theme.of(context)
                                                     .textTheme
                                                     .titleSmall

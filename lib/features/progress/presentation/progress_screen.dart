@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../app/localization.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../app/presentation/language_selector.dart';
 import '../../progress/data/progress_repository.dart';
@@ -24,7 +25,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mi progreso'),
+        title: Text(context.tr('progress')),
         actions: const [LanguageSelector()],
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
@@ -35,7 +36,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Text(
-                  'No se pudo cargar tu progreso: ${snapshot.error}',
+                  context
+                      .tr('progress_load_error')
+                      .replaceAll('{error}', '${snapshot.error}'),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -47,12 +50,11 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
           final attempts = snapshot.data!;
           if (attempts.isEmpty) {
-            return const Center(
+            return Center(
               child: Padding(
-                padding: EdgeInsets.all(24),
+                padding: const EdgeInsets.all(24),
                 child: Text(
-                  'Todavía no tienes resultados guardados. Completa el test '
-                  'para comenzar tu historial.',
+                  context.tr('progress_empty'),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -78,9 +80,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
                     backgroundColor: AppColors.goldTint,
                     child: Icon(Icons.spa_outlined, color: AppColors.gold),
                   ),
-                  title: Text(profile.title),
+                  title: Text(context.l10n.content(profile.title)),
                   subtitle: Text(
-                    '${date.day}/${date.month}/${date.year} · ${profile.reference}',
+                    '${date.day}/${date.month}/${date.year} · ${context.l10n.content(profile.reference)}',
                   ),
                 ),
               );

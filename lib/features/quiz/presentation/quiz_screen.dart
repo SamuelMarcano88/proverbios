@@ -48,9 +48,7 @@ class _QuizScreenState extends State<QuizScreen> {
     final client = widget.supabaseClient;
     if (client == null) {
       setState(() {
-        _saveError =
-            'Para guardar resultados, configura SUPABASE_URL y '
-            'SUPABASE_PUBLISHABLE_KEY en Netlify.';
+        _saveError = context.tr('quiz_save_config');
       });
       return;
     }
@@ -72,18 +70,27 @@ class _QuizScreenState extends State<QuizScreen> {
       await ProgressRepository(client).saveQuizResult(result);
       if (mounted) setState(() => _isSaved = true);
     } on AuthException catch (error) {
-      if (mounted) setState(() => _saveError = error.message);
+      if (mounted) {
+        setState(
+          () => _saveError =
+              '${context.tr('operation_failed')}: ${error.message}',
+        );
+      }
     } on PostgrestException catch (error) {
       if (mounted) {
         setState(() {
-          _saveError =
-              'No se pudo guardar. Revisa la configuración de Supabase: '
-              '${error.message}';
+          _saveError = context
+              .tr('quiz_save_error')
+              .replaceAll('{error}', error.message);
         });
       }
     } on Exception catch (error) {
       if (mounted) {
-        setState(() => _saveError = 'No se pudo guardar el resultado: $error');
+        setState(
+          () => _saveError = context
+              .tr('quiz_save_error')
+              .replaceAll('{error}', '$error'),
+        );
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -124,52 +131,57 @@ class _QuizScreenState extends State<QuizScreen> {
 
   Widget _buildQuestion(BuildContext context) {
     final question = _questions[_answers.length];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          'PREGUNTA ${_answers.length + 1} DE ${_questions.length}',
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: AppColors.gold,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.1,
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            context
+                .tr('question_progress')
+                .replaceAll('{current}', '${_answers.length + 1}')
+                .replaceAll('{total}', '${_questions.length}'),
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: AppColors.gold,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.1,
+            ),
           ),
-        ),
-        const SizedBox(height: 12),
-        LinearProgressIndicator(value: _answers.length / _questions.length),
-        const SizedBox(height: 32),
-        Text(
-          question.prompt,
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-        const SizedBox(height: 22),
-        for (final answer in question.answers) ...[
-          Card(
-            child: InkWell(
-              onTap: () => _answer(answer),
-              borderRadius: BorderRadius.circular(12),
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Row(
-                  children: [
-                    const Icon(Icons.arrow_forward_rounded, size: 20),
-                    const SizedBox(width: 12),
-                    Expanded(child: Text(answer.label)),
-                  ],
+          const SizedBox(height: 12),
+          LinearProgressIndicator(value: _answers.length / _questions.length),
+          const SizedBox(height: 32),
+          Text(
+            context.l10n.content(question.prompt),
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
+          const SizedBox(height: 22),
+          for (final answer in question.answers) ...[
+            Card(
+              child: InkWell(
+                onTap: () => _answer(answer),
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.arrow_forward_rounded, size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(child: Text(context.l10n.content(answer.label))),
+                    ],
+                  ),
                 ),
               ),
             ),
+            const SizedBox(height: 10),
+          ],
+          const SizedBox(height: 16),
+          Text(
+            context.tr('no_diagnosis'),
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
-          const SizedBox(height: 10),
         ],
-        const Spacer(),
-        Text(
-          'No es un diagnóstico ni una etiqueta: es una pausa personal para '
-          'reflexionar.',
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-      ],
+      ),
     );
   }
 
@@ -181,7 +193,7 @@ class _QuizScreenState extends State<QuizScreen> {
           const Icon(Icons.spa_outlined, size: 54, color: AppColors.gold),
           const SizedBox(height: 18),
           Text(
-            'TU REFLEXIÓN',
+            context.tr('your_reflection'),
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
               color: AppColors.gold,
@@ -191,19 +203,24 @@ class _QuizScreenState extends State<QuizScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            result.profile.title,
+            context.l10n.content(result.profile.title),
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineMedium,
           ),
           const SizedBox(height: 14),
           Text(
-            result.profile.description,
+            context.l10n.content(result.profile.description),
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyLarge,
           ),
           const SizedBox(height: 22),
           Text(
-            'Referencia para seguir reflexionando: ${result.profile.reference}',
+            context
+                .tr('reflection_reference')
+                .replaceAll(
+                  '{reference}',
+                  context.l10n.content(result.profile.reference),
+                ),
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.titleLarge,
           ),
@@ -213,31 +230,29 @@ class _QuizScreenState extends State<QuizScreen> {
               padding: const EdgeInsets.only(bottom: 8),
               child: Row(
                 children: [
-                  Expanded(child: Text(_scoreLabel(profile))),
-                  Text('${result.scores[profile]} de ${quizQuestions.length}'),
+                  Expanded(child: Text(_scoreLabel(profile, context))),
+                  Text(
+                    context
+                        .tr('score')
+                        .replaceAll('{score}', '${result.scores[profile]}')
+                        .replaceAll('{total}', '${quizQuestions.length}'),
+                  ),
                 ],
               ),
             ),
           const SizedBox(height: 16),
           if (_isSaved)
-            const _StatusMessage(
-              text: 'Resultado guardado en tu cuenta.',
-              isError: false,
-            )
+            _StatusMessage(text: context.tr('result_saved'), isError: false)
           else if (_saveError != null)
             _StatusMessage(text: _saveError!, isError: true)
           else if (widget.supabaseClient == null)
-            const _StatusMessage(
-              text:
-                  'Completaste el test sin registrarte. El resultado es '
-                  'solo para esta sesión y no se guarda.',
+            _StatusMessage(
+              text: context.tr('no_registration_result'),
               isError: false,
             )
           else if (widget.supabaseClient?.auth.currentUser == null)
-            const _StatusMessage(
-              text:
-                  'Inicia sesión o crea una cuenta si quieres guardar este '
-                  'resultado. El test no requiere registro.',
+            _StatusMessage(
+              text: context.tr('save_result_prompt'),
               isError: false,
             ),
           if (_isSaving) const LinearProgressIndicator(),
@@ -248,25 +263,26 @@ class _QuizScreenState extends State<QuizScreen> {
               icon: const Icon(Icons.bookmark_add_outlined),
               label: Text(
                 widget.supabaseClient?.auth.currentUser == null
-                    ? 'Iniciar sesión y guardar'
-                    : 'Guardar resultado',
+                    ? context.tr('login_save')
+                    : context.tr('save_result'),
               ),
             ),
           const SizedBox(height: 8),
           FilledButton(
             onPressed: _restart,
-            child: const Text('Volver a hacer el test'),
+            child: Text(context.tr('retake_test')),
           ),
         ],
       ),
     );
   }
 
-  String _scoreLabel(WisdomProfile profile) => switch (profile) {
-    WisdomProfile.wise => 'Sabio',
-    WisdomProfile.simple => 'Simple',
-    WisdomProfile.foolish => 'Insensato',
-  };
+  String _scoreLabel(WisdomProfile profile, BuildContext context) =>
+      switch (profile) {
+        WisdomProfile.wise => context.tr('wise'),
+        WisdomProfile.simple => context.tr('simple'),
+        WisdomProfile.foolish => context.tr('foolish'),
+      };
 }
 
 class _StatusMessage extends StatelessWidget {

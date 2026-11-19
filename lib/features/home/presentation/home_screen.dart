@@ -228,8 +228,10 @@ class _Header extends StatelessWidget {
                   } else {
                     Navigator.of(context).push(
                       MaterialPageRoute<void>(
-                        builder: (_) =>
-                            AuthScreen(supabaseClient: supabaseClient!),
+                        builder: (_) => AuthScreen(
+                          supabaseClient: supabaseClient!,
+                          startInRegistration: value == 'register',
+                        ),
                       ),
                     );
                   }
@@ -240,14 +242,20 @@ class _Header extends StatelessWidget {
                       value: 'progress',
                       child: Text(l10n.text('progress')),
                     ),
-                  PopupMenuItem(
-                    value: user == null ? 'signIn' : 'signOut',
-                    child: Text(
-                      user == null
-                          ? l10n.text('sign_in')
-                          : l10n.text('sign_out'),
+                  if (user == null) ...[
+                    PopupMenuItem(
+                      value: 'signIn',
+                      child: Text(l10n.text('sign_in')),
                     ),
-                  ),
+                    PopupMenuItem(
+                      value: 'register',
+                      child: Text(l10n.text('create_account_option')),
+                    ),
+                  ] else
+                    PopupMenuItem(
+                      value: 'signOut',
+                      child: Text(l10n.text('sign_out')),
+                    ),
                 ],
                 child: Row(
                   children: [
@@ -277,7 +285,13 @@ class _Header extends StatelessWidget {
     } on AuthException catch (error) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('No se pudo cerrar sesión: ${error.message}')),
+          SnackBar(
+            content: Text(
+              context
+                  .tr('sign_out_failed')
+                  .replaceAll('{error}', error.message),
+            ),
+          ),
         );
       }
     }
@@ -287,16 +301,12 @@ class _Header extends StatelessWidget {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Activa tu cuenta'),
-        content: const Text(
-          'El test funciona sin registro. Para crear una cuenta y guardar el '
-          'progreso, configura SUPABASE_URL y SUPABASE_PUBLISHABLE_KEY en '
-          'Netlify y vuelve a publicar la app.',
-        ),
+        title: Text(context.tr('account_setup_title')),
+        content: Text(context.tr('email_separator')),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Entendido'),
+            child: Text(context.tr('account_setup_action')),
           ),
         ],
       ),
