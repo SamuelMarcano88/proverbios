@@ -328,6 +328,16 @@ const _translations = <String, Map<String, String>>{
     'ptBr':
         'Verifique se o Google está habilitado no Supabase e se a URL deste site está autorizada em Redirect URLs.',
   },
+  'google_connecting': {
+    'es': 'Conectando con Google...',
+    'ptBr': 'Conectando ao Google...',
+  },
+  'google_redirecting': {
+    'es':
+        'Se inició el acceso con Google. Si no continúa, revisa la configuración de OAuth en Supabase.',
+    'ptBr':
+        'O acesso com o Google foi iniciado. Se não continuar, verifique a configuração de OAuth no Supabase.',
+  },
   'sign_in_or_register': {
     'es': 'Iniciar sesión o crear cuenta',
     'ptBr': 'Entrar ou criar uma conta',

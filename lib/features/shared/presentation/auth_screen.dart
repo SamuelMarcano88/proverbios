@@ -25,6 +25,7 @@ class _AuthScreenState extends State<AuthScreen> {
   final _passwordController = TextEditingController();
   bool _isRegistering = false;
   bool _isSubmitting = false;
+  bool _isGoogleLoading = false;
   String? _message;
   String? _error;
 
@@ -86,6 +87,7 @@ class _AuthScreenState extends State<AuthScreen> {
   Future<void> _continueWithGoogle() async {
     setState(() {
       _isSubmitting = true;
+      _isGoogleLoading = true;
       _error = null;
       _message = null;
     });
@@ -99,6 +101,8 @@ class _AuthScreenState extends State<AuthScreen> {
         setState(() {
           _error = context.tr('google_start_failed');
         });
+      } else if (mounted) {
+        setState(() => _message = context.tr('google_redirecting'));
       }
     } on AuthException catch (error) {
       if (mounted) {
@@ -115,7 +119,12 @@ class _AuthScreenState extends State<AuthScreen> {
         );
       }
     } finally {
-      if (mounted) setState(() => _isSubmitting = false);
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+          _isGoogleLoading = false;
+        });
+      }
     }
   }
 
@@ -151,24 +160,42 @@ class _AuthScreenState extends State<AuthScreen> {
                   OutlinedButton(
                     onPressed: _isSubmitting ? null : _continueWithGoogle,
                     child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 12),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text(
-                            'G',
-                            style: TextStyle(
-                              color: Color(0xFF4285F4),
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700,
+                          if (_isGoogleLoading) ...[
+                            const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             ),
-                          ),
-                          const SizedBox(width: 10),
-                          Text(context.tr('continue_google')),
+                            const SizedBox(width: 10),
+                            Text(context.tr('google_connecting')),
+                          ] else ...[
+                            const Text(
+                              'G',
+                              style: TextStyle(
+                                color: Color(0xFF4285F4),
+                                fontSize: 22,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(context.tr('continue_google')),
+                          ],
                         ],
                       ),
                     ),
                   ),
+                  if (_error != null) ...[
+                    const SizedBox(height: 14),
+                    _MessageBox(text: _error!, isError: true),
+                  ],
+                  if (_message != null) ...[
+                    const SizedBox(height: 14),
+                    _MessageBox(text: _message!, isError: false),
+                  ],
                   Padding(
                     padding: EdgeInsets.symmetric(vertical: 18),
                     child: Row(
@@ -241,14 +268,6 @@ class _AuthScreenState extends State<AuthScreen> {
                         return null;
                       },
                     ),
-                  ],
-                  if (_error != null) ...[
-                    const SizedBox(height: 14),
-                    _MessageBox(text: _error!, isError: true),
-                  ],
-                  if (_message != null) ...[
-                    const SizedBox(height: 14),
-                    _MessageBox(text: _message!, isError: false),
                   ],
                   const SizedBox(height: 18),
                   FilledButton(
