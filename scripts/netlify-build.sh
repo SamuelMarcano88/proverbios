@@ -5,7 +5,9 @@ flutter_version="${FLUTTER_VERSION:-3.41.1}"
 
 if command -v flutter >/dev/null 2>&1; then
   flutter pub get
-  flutter build web --release
+  flutter build web --release \
+    --dart-define="SUPABASE_URL=${SUPABASE_URL:-}" \
+    --dart-define="SUPABASE_PUBLISHABLE_KEY=${SUPABASE_PUBLISHABLE_KEY:-}"
   exit 0
 fi
 

@@ -379,6 +379,27 @@ const _translations = <String, Map<String, String>>{
     'ptBr': 'Não foi possível salvar o resultado: {error}',
   },
   'user_fallback': {'es': 'Usuario', 'ptBr': 'Usuário'},
+  'auth_decode_error': {
+    'es':
+        'Supabase devolvió una respuesta inválida al crear la cuenta. Verifica que SUPABASE_URL sea la URL del proyecto y que SUPABASE_PUBLISHABLE_KEY corresponda a ese mismo proyecto.',
+    'ptBr':
+        'O Supabase retornou uma resposta inválida ao criar a conta. Verifique se SUPABASE_URL é a URL do projeto e se SUPABASE_PUBLISHABLE_KEY pertence ao mesmo projeto.',
+  },
+  'google_decode_error': {
+    'es':
+        'Supabase devolvió una respuesta inválida al iniciar Google. Verifica la URL del proyecto y la configuración del proveedor Google.',
+    'ptBr':
+        'O Supabase retornou uma resposta inválida ao iniciar o Google. Verifique a URL do projeto e a configuração do provedor Google.',
+  },
+  'copy_error': {
+    'es': 'Copiar detalle del error',
+    'ptBr': 'Copiar detalhes do erro',
+  },
+  'error_copied': {
+    'es': 'Detalle copiado al portapapeles.',
+    'ptBr': 'Detalhes copiados para a área de transferência.',
+  },
+  'auth_success': {'es': 'Sesión iniciada.', 'ptBr': 'Sessão iniciada.'},
 };
 
 const _contentTranslations = <String, Map<String, String>>{

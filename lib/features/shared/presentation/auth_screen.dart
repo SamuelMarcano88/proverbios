@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../app/localization.dart';
+import '../../../app/presentation/copyable_error_notice.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../app/presentation/language_selector.dart';
 
@@ -73,6 +74,14 @@ class _AuthScreenState extends State<AuthScreen> {
         );
         if (mounted) Navigator.of(context).pop(true);
       }
+    } on AuthUnknownException catch (error) {
+      if (mounted) {
+        setState(
+          () => _error = error.message == 'Failed to decode error response'
+              ? context.tr('auth_decode_error')
+              : error.message,
+        );
+      }
     } on AuthException catch (error) {
       if (mounted) setState(() => _error = error.message);
     } on Exception catch (error) {
@@ -103,6 +112,13 @@ class _AuthScreenState extends State<AuthScreen> {
         });
       } else if (mounted) {
         setState(() => _message = context.tr('google_redirecting'));
+      }
+    } on AuthUnknownException {
+      if (mounted) {
+        setState(
+          () => _error =
+              '${context.tr('google_decode_error')}\n${context.tr('google_setup_hint')}',
+        );
       }
     } on AuthException catch (error) {
       if (mounted) {
@@ -190,11 +206,11 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   if (_error != null) ...[
                     const SizedBox(height: 14),
-                    _MessageBox(text: _error!, isError: true),
+                    CopyableErrorNotice(message: _error!),
                   ],
                   if (_message != null) ...[
                     const SizedBox(height: 14),
-                    _MessageBox(text: _message!, isError: false),
+                    _MessageBox(text: _message!),
                   ],
                   Padding(
                     padding: EdgeInsets.symmetric(vertical: 18),
@@ -314,17 +330,16 @@ class _AuthScreenState extends State<AuthScreen> {
 }
 
 class _MessageBox extends StatelessWidget {
-  const _MessageBox({required this.text, required this.isError});
+  const _MessageBox({required this.text});
 
   final String text;
-  final bool isError;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isError ? AppColors.terracottaTint : AppColors.blueTint,
+        color: AppColors.blueTint,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(text),

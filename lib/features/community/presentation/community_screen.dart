@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../app/localization.dart';
+import '../../../app/presentation/copyable_error_notice.dart';
 import '../../../app/presentation/language_selector.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../shared/presentation/auth_screen.dart';
@@ -172,10 +173,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
                   ),
                 if (_error != null) ...[
                   const SizedBox(height: 10),
-                  Text(
-                    _error!,
-                    style: const TextStyle(color: AppColors.terracotta),
-                  ),
+                  CopyableErrorNotice(message: _error!),
                 ],
                 const SizedBox(height: 24),
                 Text(
@@ -190,9 +188,8 @@ class _CommunityScreenState extends State<CommunityScreen> {
                     future: _posts,
                     builder: (context, snapshot) {
                       if (snapshot.hasError) {
-                        return Text(
-                          _formatCommunityError(snapshot.error!),
-                          style: const TextStyle(color: AppColors.terracotta),
+                        return CopyableErrorNotice(
+                          message: _formatCommunityError(snapshot.error!),
                         );
                       }
                       if (!snapshot.hasData) {

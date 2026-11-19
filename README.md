@@ -101,10 +101,17 @@ proyecto ni la carpeta `web`: ninguna contiene el sitio compilado completo.
      la dirección de retorno usada por la app, y el origen local
      (`http://localhost:3000`) si desarrollas localmente.
 4. En Netlify, abre **Project configuration → Environment variables** y agrega:
-   - `SUPABASE_URL`: URL del proyecto.
+   - `SUPABASE_URL`: URL base del proyecto, con formato
+     `https://<project-ref>.supabase.co` (sin `/rest/v1` ni rutas adicionales).
    - `SUPABASE_PUBLISHABLE_KEY`: clave pública/publishable del proyecto (nunca
      uses la `service_role` en el cliente).
 5. Vuelve a desplegar la rama `main`.
+
+Si el registro muestra `Failed to decode error response`, confirma que
+`SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY` pertenecen al mismo proyecto y que
+el proveedor Email está habilitado. Al completar Google, volver a la pantalla
+principal es normal; la cuenta queda iniciada si aparece el correo del usuario
+en el menú superior.
 
 El build pasa esas variables a Flutter mediante `--dart-define`. Para desarrollo
 local, proporciona los mismos valores al ejecutar `flutter run` o
